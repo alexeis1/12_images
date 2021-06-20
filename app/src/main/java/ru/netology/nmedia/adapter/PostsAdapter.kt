@@ -1,15 +1,23 @@
 package ru.netology.nmedia.adapter
 
+import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
+import ru.netology.nmedia.activity.ImageFullscreenFragment.Companion.urlArg
+import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.databinding.CardPostBinding
+import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.enumeration.AttachmentType
+import ru.netology.nmedia.view.load
 import ru.netology.nmedia.view.loadCircleCrop
 
 interface OnInteractionListener {
@@ -38,6 +46,30 @@ class PostViewHolder(
     private val onInteractionListener: OnInteractionListener,
 ) : RecyclerView.ViewHolder(binding.root) {
 
+    private fun bindAttachment(attachment: Attachment?){
+        binding.apply {
+            if (attachment != null) {
+                if (attachment.type == AttachmentType.IMAGE) {
+                    imageView.visibility = View.VISIBLE
+                    imageView.load("${BuildConfig.BASE_URL}/media/${attachment.url}")
+                    imageView.setOnClickListener {
+                        imageView.findNavController()
+                            .navigate(
+                                R.id.action_feedFragment_to_imageFullscreenFragment,
+                                Bundle().apply {
+                                    urlArg = attachment.url
+                                }
+                            )
+                    }
+                } else {
+                    imageView.visibility = View.GONE
+                }
+            } else {
+                imageView.visibility = View.GONE
+            }
+        }
+    }
+
     fun bind(post: Post) {
         binding.apply {
             author.text = post.author
@@ -46,6 +78,7 @@ class PostViewHolder(
             avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
+            bindAttachment(post.attachment)
 
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {

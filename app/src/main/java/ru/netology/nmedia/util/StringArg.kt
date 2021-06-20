@@ -1,6 +1,7 @@
 package ru.netology.nmedia.util
 
 import android.os.Bundle
+import retrofit2.http.Url
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
